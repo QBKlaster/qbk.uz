@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — Qarshi Beton Klaster</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1B1917;--slate:#26241F;--stone:#8B877E;--concrete:#D5D2CA;--paper:#EDEBE5;--white:#F8F7F4;
+ --signal:#F2C10E;--red:#E4573D;--line:rgba(237,235,229,.16)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--white);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.6}
+h1,h2,h3{font-family:"Fira Sans Extra Condensed",sans-serif;font-weight:800;text-transform:uppercase;margin:0;line-height:1}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+a{color:inherit;text-decoration:none}
+input,select,textarea{width:100%;background:transparent;border:1px solid var(--line);color:var(--white);padding:11px 13px;font-family:"IBM Plex Sans",sans-serif;font-size:14.5px;border-radius:0}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--signal)}
+select option{background:var(--slate)}
+textarea{resize:vertical;min-height:80px}
+.mono{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone)}
+:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;border:1px solid var(--line);transition:.18s}
+.btn:hover{border-color:var(--signal);color:var(--signal)}
+.btn-y{background:var(--signal);color:var(--ink);border-color:var(--signal)}
+.btn-y:hover{background:var(--white);border-color:var(--white);color:var(--ink)}
+.btn-red:hover{border-color:var(--red);color:var(--red)}
+
+/* gate */
+#gate{position:fixed;inset:0;background:var(--ink);display:grid;place-items:center;z-index:90;padding:24px}
+#gate .box{width:min(360px,100%);border:1px solid var(--line);padding:34px}
+#gate h1{font-size:26px;margin-bottom:6px}
+#gate p{color:var(--stone);font-size:13.5px;margin:0 0 22px}
+#gate input{margin-bottom:14px}
+#gateErr{color:var(--red);font-size:13px;min-height:20px}
+
+header{position:sticky;top:0;background:rgba(23,21,19,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:40}
+.hin{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mark{width:34px;height:34px;background:var(--signal);color:var(--ink);display:grid;place-items:center;font-family:"Fira Sans Extra Condensed",sans-serif;font-weight:800}
+.hin h1{font-size:18px}
+.saved{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone)}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);max-width:1100px;margin:0 auto;padding:0 24px;flex-wrap:wrap}
+.tabs button{padding:14px 18px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);border-bottom:2px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--white);border-bottom-color:var(--signal)}
+main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
+.panel{display:none}
+.panel.on{display:block}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+
+.row{display:flex;gap:16px;align-items:center;border:1px solid var(--line);padding:12px;margin-bottom:10px;background:rgba(237,235,229,.03)}
+.thumb{width:78px;height:60px;flex:none;background:linear-gradient(158deg,#E7E5E0,#CDCAC2);display:grid;place-items:center;overflow:hidden}
+.thumb img{max-width:100%;max-height:100%;object-fit:contain;mix-blend-mode:multiply}
+.thumb span{font-family:"IBM Plex Mono",monospace;font-size:9px;color:#7a776f;text-align:center;padding:4px}
+.row .meta{flex:1;min-width:0}
+.row .meta b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .acts{display:flex;gap:6px;flex:none}
+.icobtn{width:36px;height:36px;border:1px solid var(--line);display:grid;place-items:center;font-size:14px;transition:.18s}
+.icobtn:hover{border-color:var(--signal);color:var(--signal)}
+.icobtn.del:hover{border-color:var(--red);color:var(--red)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{margin-bottom:16px}
+.field .mono{display:block;margin-bottom:7px}
+.hint{color:var(--stone);font-size:12.5px;margin-top:6px}
+
+/* editor */
+#editor{position:fixed;inset:0;background:rgba(12,11,10,.86);z-index:70;display:none;overflow:auto;padding:24px}
+#editor.on{display:block}
+.ecard{max-width:760px;margin:0 auto;background:var(--slate);border:1px solid var(--line)}
+.ehead{display:flex;align-items:center;gap:14px;padding:18px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--slate);z-index:2}
+.ehead h2{font-size:20px;margin-right:auto}
+.ebody{padding:22px}
+.drop{border:1px dashed rgba(237,235,229,.3);padding:18px;display:flex;gap:18px;align-items:center;cursor:pointer;transition:.2s}
+.drop:hover,.drop.over{border-color:var(--signal);background:rgba(242,193,14,.06)}
+.drop .prev{width:132px;height:100px;flex:none;background:linear-gradient(158deg,#E7E5E0,#CDCAC2);display:grid;place-items:center;overflow:hidden}
+.drop .prev img{max-width:100%;max-height:100%;object-fit:contain;mix-blend-mode:multiply}
+.drop .prev span{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:#7a776f}
+.langtabs{display:flex;gap:6px;margin:22px 0 16px}
+.langtabs button{padding:8px 14px;border:1px solid var(--line);font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em}
+.langtabs button[aria-selected="true"]{background:var(--signal);border-color:var(--signal);color:var(--ink);font-weight:600}
+.lp{display:none}.lp.on{display:block}
+.efoot{display:flex;gap:10px;padding:18px 22px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--slate)}
+
+.help h3{font-size:20px;margin:26px 0 10px}
+.help ol,.help ul{padding-left:20px;color:var(--concrete)}
+.help li{margin-bottom:8px}
+.help code{font-family:"IBM Plex Mono",monospace;font-size:13px;background:rgba(237,235,229,.1);padding:2px 6px}
+.warn{border-left:3px solid var(--signal);padding:12px 0 12px 16px;color:var(--concrete);font-size:14px;margin:18px 0}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(220%);background:var(--signal);color:var(--ink);padding:12px 20px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;transition:transform .3s;z-index:95}
+.toast.on{transform:translateX(-50%) translateY(0)}
+@media (max-width:700px){.grid2{grid-template-columns:1fr}.drop{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="box">
+    <h1>Admin panel</h1>
+    <p>Qarshi Beton Klaster — sayt kontentini boshqarish</p>
+    <input type="password" id="gatePass" placeholder="Parol" autocomplete="current-password">
+    <div id="gateErr"></div>
+    <button class="btn btn-y" id="gateBtn" style="width:100%;justify-content:center">Kirish</button>
+  </div>
+</div>
+
+<header>
+  <div class="hin">
+    <span class="mark">QBK</span>
+    <h1>Sayt boshqaruvi</h1>
+    <span class="saved" id="savedAt">—</span>
+  </div>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="products" aria-selected="true">Mahsulotlar</button>
+    <button role="tab" data-tab="media" aria-selected="false">Sayt rasmlari</button>
+    <button role="tab" data-tab="contacts" aria-selected="false">Aloqa</button>
+    <button role="tab" data-tab="help" aria-selected="false">Qo'llanma</button>
+  </div>
+</header>
+
+<main>
+  <section class="panel on" id="p-products">
+    <div class="bar">
+      <button class="btn btn-y" id="addBtn">+ Yangi mahsulot</button>
+      <a class="btn" href="index.html?preview=1" target="_blank">Saytni ko'rish</a>
+      <button class="btn" id="exportBtn">data.js yuklab olish</button>
+      <button class="btn" id="importBtn">Fayldan yuklash</button>
+      <input type="file" id="importFile" accept=".js,.json" hidden>
+      <button class="btn btn-red" id="resetBtn">Boshlang'ich holat</button>
+    </div>
+    <div id="list"></div>
+  </section>
+
+  <section class="panel" id="p-media">
+    <div class="grid2">
+      <div class="field">
+        <span class="mono">Bosh sahifa rasmi (hero)</span>
+        <div class="drop" data-media="hero"><div class="prev" id="prev-hero"><span>rasm yo'q</span></div>
+          <div><b>Rasmni tanlang</b><div class="hint">Shaffof fonli PNG yaxshi chiqadi. Bosing yoki faylni shu yerga tashlang.</div></div></div>
+        <button class="btn btn-red" data-clear="hero" style="margin-top:10px">Rasmni o'chirish</button>
+      </div>
+      <div class="field">
+        <span class="mono">Ishlab chiqarish bo'limi rasmi</span>
+        <div class="drop" data-media="quarry"><div class="prev" id="prev-quarry"><span>rasm yo'q</span></div>
+          <div><b>Rasmni tanlang</b><div class="hint">Zavod yoki karyer fotosi. Gorizontal format tavsiya etiladi.</div></div></div>
+        <button class="btn btn-red" data-clear="quarry" style="margin-top:10px">Rasmni o'chirish</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-contacts">
+    <div class="grid2">
+      <div class="field"><span class="mono">Telefon</span><input id="c-phone"></div>
+      <div class="field"><span class="mono">Elektron pochta</span><input id="c-email"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><span class="mono">Manzil — o'zbekcha</span><textarea id="c-addr-uz"></textarea></div>
+      <div class="field"><span class="mono">Manzil — ruscha</span><textarea id="c-addr-ru"></textarea></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><span class="mono">Manzil — inglizcha</span><textarea id="c-addr-en"></textarea></div>
+      <div class="field"><span class="mono">Ish vaqti — o'zbekcha</span><textarea id="c-hours-uz"></textarea></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><span class="mono">Ish vaqti — ruscha</span><textarea id="c-hours-ru"></textarea></div>
+      <div class="field"><span class="mono">Ish vaqti — inglizcha</span><textarea id="c-hours-en"></textarea></div>
+    </div>
+    <p class="hint">Yangi qator kerak bo'lsa <code>&lt;br&gt;</code> yozing.</p>
+    <h3 style="margin:26px 0 14px;font-size:20px">Ijtimoiy tarmoqlar</h3>
+    <div class="grid2">
+      <div class="field"><span class="mono">Facebook havolasi</span><input id="c-fb" placeholder="https://facebook.com/..."></div>
+      <div class="field"><span class="mono">Instagram havolasi</span><input id="c-ig" placeholder="https://instagram.com/..."></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><span class="mono">LinkedIn havolasi</span><input id="c-li" placeholder="https://linkedin.com/company/..."></div>
+      <div class="field"><span class="mono">Telegram havolasi</span><input id="c-tg" placeholder="https://t.me/..."></div>
+    </div>
+    <p class="hint">Bo'sh qoldirilgan tarmoq saytda ko'rsatilmaydi.</p>
+  </section>
+
+  <section class="panel help" id="p-help">
+    <h3>Qanday ishlaydi</h3>
+    <ol>
+      <li>Bu panelda qilgan o'zgarishlaringiz avval shu brauzerda saqlanadi (qoralama).</li>
+      <li><b>Saytni ko'rish</b> tugmasi qoralamani sayt ko'rinishida ochadi.</li>
+      <li>Hammasi joyida bo'lsa <b>data.js yuklab olish</b> tugmasini bosing.</li>
+      <li>Yuklab olingan <code>data.js</code> faylni hostingdagi eski <code>data.js</code> ustiga yuklang.</li>
+      <li>Saytni yangilang — yangi mahsulotlar chiqadi.</li>
+    </ol>
+    <div class="warn">Qoralama faqat shu kompyuter va shu brauzerda turadi. Boshqa kompyuterda ishlash uchun <b>data.js</b> faylni <b>Fayldan yuklash</b> orqali oching.</div>
+    <h3>Mahsulot qo'shish</h3>
+    <ul>
+      <li><b>+ Yangi mahsulot</b> → rasm tanlang, kod (masalan <code>БР</code>), bo'limni belgilang.</li>
+      <li>Nomi va tavsifini uch tilda to'ldiring. Bo'sh qoldirilsa, o'zbekcha matn ko'rsatiladi.</li>
+      <li>Xususiyatlar — har bir qator alohida punkt bo'lib chiqadi.</li>
+      <li>Rasm yuklanmasa, o'sha bo'limning chizma belgisi ko'rsatiladi.</li>
+    </ul>
+    <h3>Rasmlar haqida</h3>
+    <ul>
+      <li>Rasm avtomatik kichraytiriladi (900 px) va siqiladi — sayt tez ochiladi.</li>
+      <li>Mahsulot rasmi uchun oq yoki shaffof fon eng yaxshi natija beradi.</li>
+    </ul>
+    <h3>Parol</h3>
+    <p style="color:var(--concrete)">Kirish paroli <code>admin.html</code> faylining boshida, <code>const PASS</code> qatorida turadi. Uni istalgan so'zga almashtiring. Bu oddiy himoya — jiddiy himoya uchun <code>admin.html</code> faylni hosting parolining ostiga qo'ying yoki umuman serverga yuklamang.</p>
+  </section>
+</main>
+
+<div id="editor">
+  <div class="ecard">
+    <div class="ehead"><h2 id="eTitle">Mahsulot</h2><button class="btn" id="eClose">Yopish</button></div>
+    <div class="ebody">
+      <div class="drop" id="eDrop">
+        <div class="prev" id="ePrev"><span>rasm yo'q</span></div>
+        <div><b>Mahsulot rasmi</b>
+          <div class="hint">Bosing yoki faylni shu yerga tashlang. JPG, PNG, WEBP.</div>
+          <button class="btn btn-red" id="eImgClear" style="margin-top:10px">Rasmni olib tashlash</button></div>
+      </div>
+      <div class="grid2" style="margin-top:20px">
+        <div class="field"><span class="mono">Kod / belgisi</span><input id="eCode" placeholder="П2Г, БР, ЛК..."></div>
+        <div class="field"><span class="mono">Bo'lim</span>
+          <select id="eCat">
+            <option value="rc">Temir-beton buyumlar</option>
+            <option value="road">Yo'l elementlari</option>
+            <option value="mix">Beton va inert materiallar</option>
+          </select></div>
+      </div>
+      <div class="langtabs" role="tablist">
+        <button role="tab" data-l="uz" aria-selected="true">O'zbekcha</button>
+        <button role="tab" data-l="ru" aria-selected="false">Ruscha</button>
+        <button role="tab" data-l="en" aria-selected="false">Inglizcha</button>
+      </div>
+      <div id="langPanels"></div>
+    </div>
+    <div class="efoot"><button class="btn btn-y" id="eSave">Saqlash</button><button class="btn" id="eCancel">Bekor qilish</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+/* ====== KIRISH PAROLI — shu so'zni o'zgartiring ====== */
+const PASS = "qbk2026";
+/* ==================================================== */
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const LANGS = [["uz","O'zbekcha"],["ru","Ruscha"],["en","Inglizcha"]];
+const CATNAME = {rc:"Temir-beton buyumlar", road:"Yo'l elementlari", mix:"Beton va inert materiallar"};
+const KEY = "qbk_draft";
+let D = null, editIdx = -1, editImg = "";
+
+function toast(t){ const el = $("#toast"); el.textContent = t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"), 2200); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function baseData(){ return window.QBK_DATA ? clone(window.QBK_DATA) : {version:1, media:{}, contacts:{addr:{},hours:{},social:{}}, products:[]}; }
+
+function load(){
+  try{ const d = localStorage.getItem(KEY); if(d){ D = JSON.parse(d); return; } }catch(e){}
+  D = baseData();
+}
+function save(){
+  D.contacts = D.contacts || {};
+  try{
+    localStorage.setItem(KEY, JSON.stringify(D));
+    $("#savedAt").textContent = "Saqlandi " + new Date().toLocaleTimeString("uz-UZ",{hour:"2-digit",minute:"2-digit"});
+  }catch(e){
+    $("#savedAt").textContent = "Saqlanmadi — joy yetmadi";
+    toast("Brauzer xotirasi to'ldi. data.js ni yuklab oling.");
+  }
+}
+
+/* ---- gate ---- */
+function enter(){
+  if($("#gatePass").value === PASS){ $("#gate").style.display = "none"; }
+  else $("#gateErr").textContent = "Parol noto'g'ri.";
+}
+$("#gateBtn").onclick = enter;
+$("#gatePass").addEventListener("keydown", e => { if(e.key === "Enter") enter(); });
+
+/* ---- tabs ---- */
+$$('.tabs button').forEach(b => b.onclick = () => {
+  $$('.tabs button').forEach(x => x.setAttribute("aria-selected", String(x === b)));
+  $$('.panel').forEach(p => p.classList.toggle("on", p.id === "p-" + b.dataset.tab));
+});
+
+/* ---- rasm siqish ---- */
+function readImage(file, cb){
+  if(!file || !file.type.startsWith("image/")){ toast("Bu rasm fayli emas."); return; }
+  const fr = new FileReader();
+  fr.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      const max = 900, sc = Math.min(1, max / Math.max(im.width, im.height));
+      const cv = document.createElement("canvas");
+      cv.width = Math.round(im.width * sc); cv.height = Math.round(im.height * sc);
+      cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
+      let out = cv.toDataURL("image/webp", .82);
+      if(!out.startsWith("data:image/webp")) out = cv.toDataURL("image/jpeg", .85);
+      cb(out);
+    };
+    im.onerror = () => toast("Rasmni o'qib bo'lmadi.");
+    im.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+function wireDrop(el, cb){
+  el.addEventListener("click", () => {
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.accept = "image/*";
+    inp.onchange = () => readImage(inp.files[0], cb);
+    inp.click();
+  });
+  el.addEventListener("dragover", e => { e.preventDefault(); el.classList.add("over"); });
+  el.addEventListener("dragleave", () => el.classList.remove("over"));
+  el.addEventListener("drop", e => {
+    e.preventDefault(); el.classList.remove("over");
+    readImage(e.dataTransfer.files[0], cb);
+  });
+}
+
+/* ---- ro'yxat ---- */
+function renderList(){
+  const ps = D.products || [];
+  $("#list").innerHTML = ps.length ? ps.map((p,i) => {
+    const n = (p.uz && p.uz.n) || (p.ru && p.ru.n) || (p.en && p.en.n) || "(nomsiz)";
+    const th = p.img ? `<img src="${p.img}" alt="">` : `<span>rasm<br>yo'q</span>`;
+    return `<div class="row">
+      <div class="thumb">${th}</div>
+      <div class="meta"><b>${n.replace(/</g,"&lt;")}</b>
+        <span class="mono">${p.code ? p.code + " · " : ""}${CATNAME[p.cat] || p.cat}</span></div>
+      <div class="acts">
+        <button class="icobtn" data-up="${i}" title="Yuqoriga">↑</button>
+        <button class="icobtn" data-down="${i}" title="Pastga">↓</button>
+        <button class="icobtn" data-edit="${i}" title="Tahrirlash">✎</button>
+        <button class="icobtn del" data-del="${i}" title="O'chirish">✕</button>
+      </div></div>`;
+  }).join("") : `<p class="hint">Hozircha mahsulot yo'q. “+ Yangi mahsulot” tugmasini bosing.</p>`;
+
+  $$("#list [data-edit]").forEach(b => b.onclick = () => openEditor(+b.dataset.edit));
+  $$("#list [data-del]").forEach(b => b.onclick = () => {
+    const i = +b.dataset.del;
+    if(confirm("Mahsulot o'chirilsinmi?")){ D.products.splice(i,1); save(); renderList(); }
+  });
+  $$("#list [data-up]").forEach(b => b.onclick = () => move(+b.dataset.up, -1));
+  $$("#list [data-down]").forEach(b => b.onclick = () => move(+b.dataset.down, 1));
+}
+function move(i, d){
+  const j = i + d, ps = D.products;
+  if(j < 0 || j >= ps.length) return;
+  [ps[i], ps[j]] = [ps[j], ps[i]];
+  save(); renderList();
+}
+
+/* ---- editor ---- */
+function langPanelsHTML(p){
+  return LANGS.map(([l,label]) => {
+    const t = (p && p[l]) || {};
+    return `<div class="lp ${l==="uz"?"on":""}" data-lp="${l}">
+      <div class="field"><span class="mono">Nomi (${label})</span><input data-f="${l}.n" value="${(t.n||"").replace(/"/g,"&quot;")}"></div>
+      <div class="field"><span class="mono">Qisqa tavsif (${label})</span><textarea data-f="${l}.d">${t.d||""}</textarea></div>
+      <div class="field"><span class="mono">Xususiyatlar — har biri yangi qatorda (${label})</span><textarea data-f="${l}.s" style="min-height:110px">${(t.s||[]).join("\n")}</textarea></div>
+    </div>`;
+  }).join("");
+}
+function openEditor(i){
+  editIdx = i;
+  const p = i >= 0 ? D.products[i] : null;
+  editImg = p ? (p.img || "") : "";
+  $("#eTitle").textContent = i >= 0 ? "Mahsulotni tahrirlash" : "Yangi mahsulot";
+  $("#eCode").value = p ? (p.code || "") : "";
+  $("#eCat").value = p ? (p.cat || "rc") : "rc";
+  $("#langPanels").innerHTML = langPanelsHTML(p);
+  $$("#editor .langtabs button").forEach(b => {
+    b.setAttribute("aria-selected", String(b.dataset.l === "uz"));
+    b.onclick = () => {
+      $$("#editor .langtabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+      $$("#langPanels .lp").forEach(pl => pl.classList.toggle("on", pl.dataset.lp === b.dataset.l));
+    };
+  });
+  drawPrev();
+  $("#editor").classList.add("on");
+}
+function drawPrev(){
+  $("#ePrev").innerHTML = editImg ? `<img src="${editImg}" alt="">` : `<span>rasm yo'q</span>`;
+}
+function closeEditor(){ $("#editor").classList.remove("on"); }
+$("#eClose").onclick = closeEditor;
+$("#eCancel").onclick = closeEditor;
+$("#eImgClear").onclick = e => { e.stopPropagation(); editImg = ""; drawPrev(); };
+wireDrop($("#eDrop"), src => { editImg = src; drawPrev(); });
+
+$("#eSave").onclick = () => {
+  const get = f => { const el = $(`#langPanels [data-f="${f}"]`); return el ? el.value.trim() : ""; };
+  const uzName = get("uz.n");
+  if(!uzName){ toast("O'zbekcha nomini yozing."); return; }
+  const p = {
+    id: editIdx >= 0 ? D.products[editIdx].id : "p" + Date.now().toString(36),
+    code: $("#eCode").value.trim(),
+    cat: $("#eCat").value,
+    img: editImg
+  };
+  LANGS.forEach(([l]) => {
+    p[l] = {n:get(l+".n"), d:get(l+".d"), s:get(l+".s").split("\n").map(x=>x.trim()).filter(Boolean)};
+  });
+  if(editIdx >= 0) D.products[editIdx] = p; else (D.products = D.products || []).push(p);
+  save(); renderList(); closeEditor(); toast("Saqlandi");
+};
+$("#addBtn").onclick = () => openEditor(-1);
+
+/* ---- media ---- */
+function renderMedia(){
+  ["hero","quarry"].forEach(k => {
+    const src = (D.media || {})[k];
+    $("#prev-" + k).innerHTML = src ? `<img src="${src}" alt="">` : `<span>rasm yo'q</span>`;
+  });
+}
+$$('[data-media]').forEach(el => wireDrop(el, src => {
+  D.media = D.media || {}; D.media[el.dataset.media] = src; save(); renderMedia(); toast("Rasm yangilandi");
+}));
+$$('[data-clear]').forEach(b => b.onclick = () => {
+  D.media = D.media || {}; D.media[b.dataset.clear] = ""; save(); renderMedia();
+});
+
+/* ---- contacts ---- */
+const CMAP = {
+  "c-phone":["phone"], "c-email":["email"],
+  "c-addr-uz":["addr","uz"], "c-addr-ru":["addr","ru"], "c-addr-en":["addr","en"],
+  "c-hours-uz":["hours","uz"], "c-hours-ru":["hours","ru"], "c-hours-en":["hours","en"],
+  "c-fb":["social","fb"], "c-ig":["social","ig"], "c-li":["social","li"], "c-tg":["social","tg"]
+};
+function renderContacts(){
+  const c = D.contacts = D.contacts || {};
+  c.addr = c.addr || {}; c.hours = c.hours || {}; c.social = c.social || {};
+  Object.entries(CMAP).forEach(([id,path]) => {
+    $("#"+id).value = path.length === 1 ? (c[path[0]] || "") : ((c[path[0]] || {})[path[1]] || "");
+  });
+}
+Object.entries(CMAP).forEach(([id,path]) => {
+  $("#"+id).addEventListener("input", e => {
+    const c = D.contacts;
+    if(path.length === 1) c[path[0]] = e.target.value;
+    else { c[path[0]] = c[path[0]] || {}; c[path[0]][path[1]] = e.target.value; }
+    save();
+  });
+});
+
+/* ---- export / import / reset ---- */
+$("#exportBtn").onclick = () => {
+  const txt = "/* Qarshi Beton Klaster — sayt kontenti.\n   Bu faylni qo'lda tahrirlash shart emas: admin.html orqali yangilang. */\n" +
+              "window.QBK_DATA = " + JSON.stringify(D) + ";\n";
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([txt], {type:"text/javascript"}));
+  a.download = "data.js"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast("data.js yuklab olindi");
+};
+$("#importBtn").onclick = () => $("#importFile").click();
+$("#importFile").onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    try{
+      let t = String(fr.result).trim();
+      const i = t.indexOf("{");
+      if(i > 0) t = t.slice(i);
+      t = t.replace(/;\s*$/, "");
+      const obj = JSON.parse(t);
+      if(!obj.products) throw new Error("format");
+      D = obj; save(); renderAll(); toast("Fayl yuklandi");
+    }catch(err){ toast("Faylni o'qib bo'lmadi"); }
+  };
+  fr.readAsText(f);
+  e.target.value = "";
+};
+$("#resetBtn").onclick = () => {
+  if(!confirm("Barcha o'zgarishlar bekor qilinib, data.js dagi holat qaytarilsinmi?")) return;
+  D = baseData(); save(); renderAll(); toast("Boshlang'ich holat qaytarildi");
+};
+
+function renderAll(){ renderList(); renderMedia(); renderContacts(); }
+load(); renderAll();
+$("#savedAt").textContent = "Tayyor";
+</script>
+</body>
+</html>
