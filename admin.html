@@ -85,6 +85,12 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
 .help li{margin-bottom:8px}
 .help code{font-family:"IBM Plex Mono",monospace;font-size:13px;background:rgba(237,235,229,.1);padding:2px 6px}
 .warn{border-left:3px solid var(--signal);padding:12px 0 12px 16px;color:var(--concrete);font-size:14px;margin:18px 0}
+.badge{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);white-space:nowrap}
+.badge.ok{color:#7FC98C}.badge.err{color:var(--red)}.badge.warn{color:var(--signal)}
+.offline{display:none;border-left:3px solid var(--signal);background:rgba(242,193,14,.08);padding:12px 16px;margin-bottom:20px;font-size:13.5px;color:var(--concrete)}
+.offline.on{display:block}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.ghint{color:var(--stone);font-size:12px;margin:14px 0 0;line-height:1.5}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(220%);background:var(--signal);color:var(--ink);padding:12px 20px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;transition:transform .3s;z-index:95}
 .toast.on{transform:translateX(-50%) translateY(0)}
 @media (max-width:700px){.grid2{grid-template-columns:1fr}.drop{flex-direction:column;align-items:flex-start}}
@@ -99,6 +105,8 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
     <input type="password" id="gatePass" placeholder="Parol" autocomplete="current-password">
     <div id="gateErr"></div>
     <button class="btn btn-y" id="gateBtn" style="width:100%;justify-content:center">Kirish</button>
+    <button class="btn" id="gateLocal" style="width:100%;justify-content:center;margin-top:10px;display:none">Lokal rejimda davom etish</button>
+    <p class="ghint" id="gateHint">Parol serverda tekshiriladi va admin.html ichida saqlanmaydi.</p>
   </div>
 </div>
 
@@ -107,6 +115,7 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
     <span class="mark">QBK</span>
     <h1>Sayt boshqaruvi</h1>
     <span class="saved" id="savedAt">—</span>
+    <span class="badge" id="ghState">GitHub: tekshirilmoqda…</span>
   </div>
   <div class="tabs" role="tablist">
     <button role="tab" data-tab="products" aria-selected="true">Mahsulotlar</button>
@@ -117,14 +126,20 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
 </header>
 
 <main>
+  <div class="offline" id="offlineBar">
+    <b>Lokal rejim.</b> Server bilan aloqa yo'q, shuning uchun o'zgarishlar faqat shu brauzerda saqlanadi.
+    Saytga chiqarish uchun <b>data.js yuklab olish</b> tugmasidan foydalaning yoki admin panelni sayt manzili orqali oching.
+  </div>
   <section class="panel on" id="p-products">
     <div class="bar">
-      <button class="btn btn-y" id="addBtn">+ Yangi mahsulot</button>
+      <button class="btn btn-y" id="publishBtn">Saqlash va saytga chiqarish</button>
+      <button class="btn" id="addBtn">+ Yangi mahsulot</button>
       <a class="btn" href="index.html?preview=1" target="_blank">Saytni ko'rish</a>
       <button class="btn" id="exportBtn">data.js yuklab olish</button>
       <button class="btn" id="importBtn">Fayldan yuklash</button>
       <input type="file" id="importFile" accept=".js,.json" hidden>
       <button class="btn btn-red" id="resetBtn">Boshlang'ich holat</button>
+      <button class="btn" id="logoutBtn">Chiqish</button>
     </div>
     <div id="list"></div>
   </section>
@@ -179,13 +194,14 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
   <section class="panel help" id="p-help">
     <h3>Qanday ishlaydi</h3>
     <ol>
-      <li>Bu panelda qilgan o'zgarishlaringiz avval shu brauzerda saqlanadi (qoralama).</li>
+      <li>Har bir o'zgarish darhol shu brauzerda saqlanadi (qoralama).</li>
       <li><b>Saytni ko'rish</b> tugmasi qoralamani sayt ko'rinishida ochadi.</li>
-      <li>Hammasi joyida bo'lsa <b>data.js yuklab olish</b> tugmasini bosing.</li>
-      <li>Yuklab olingan <code>data.js</code> faylni hostingdagi eski <code>data.js</code> ustiga yuklang.</li>
-      <li>Saytni yangilang — yangi mahsulotlar chiqadi.</li>
+      <li>Hammasi joyida bo'lsa <b>Saqlash va saytga chiqarish</b> tugmasini bosing.</li>
+      <li>Ma'lumot serverga, u yerdan GitHub'ga yoziladi: <code>data.js</code> yangilanadi, yangi rasmlar <code>images/</code> papkasiga tushadi.</li>
+      <li>Vercel commit'ni ko'rib saytni o'zi qayta yig'adi — 1–2 daqiqada yangi kontent saytda paydo bo'ladi.</li>
     </ol>
-    <div class="warn">Qoralama faqat shu kompyuter va shu brauzerda turadi. Boshqa kompyuterda ishlash uchun <b>data.js</b> faylni <b>Fayldan yuklash</b> orqali oching.</div>
+    <div class="warn">Yuqoridagi holat yozuvi qayerda saqlanganini ko'rsatadi: <b>“GitHub'ga chiqarilmagan o'zgarishlar bor”</b> — hali faqat brauzerda; <b>“GitHub'ga saqlandi”</b> — sayt yangilanmoqda.</div>
+    <div class="warn">Internet yoki server ishlamasa panel lokal rejimga o'tadi: o'zgarishlar yo'qolmaydi, brauzerda turadi. Aloqa tiklangach yana <b>Saqlash va saytga chiqarish</b> ni bosing.</div>
     <h3>Mahsulot qo'shish</h3>
     <ul>
       <li><b>+ Yangi mahsulot</b> → rasm tanlang, kod (masalan <code>БР</code>), bo'limni belgilang.</li>
@@ -199,7 +215,8 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
       <li>Mahsulot rasmi uchun oq yoki shaffof fon eng yaxshi natija beradi.</li>
     </ul>
     <h3>Parol</h3>
-    <p style="color:var(--concrete)">Kirish paroli <code>admin.html</code> faylining boshida, <code>const PASS</code> qatorida turadi. Uni istalgan so'zga almashtiring. Bu oddiy himoya — jiddiy himoya uchun <code>admin.html</code> faylni hosting parolining ostiga qo'ying yoki umuman serverga yuklamang.</p>
+    <p style="color:var(--concrete)">Parol endi <code>admin.html</code> ichida saqlanmaydi. U Vercel'dagi <code>ADMIN_PASSWORD</code> environment variable'ida turadi va serverda tekshiriladi. Parolni almashtirish uchun: Vercel → loyiha → Settings → Environment Variables → <code>ADMIN_PASSWORD</code> ni tahrirlang → Redeploy.</p>
+    <p style="color:var(--concrete)">GitHub token ham faqat serverda (<code>GITHUB_TOKEN</code>) turadi va hech qachon brauzerga yuborilmaydi.</p>
   </section>
 </main>
 
@@ -237,9 +254,14 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
 
 <script src="data.js"></script>
 <script>
-/* ====== KIRISH PAROLI — shu so'zni o'zgartiring ====== */
-const PASS = "qbk2026";
-/* ==================================================== */
+/* ============================================================
+   Parol bu faylda YO'Q. U Vercel'dagi ADMIN_PASSWORD
+   environment variable'ida turadi va /api/login orqali
+   serverda tekshiriladi. GitHub token ham faqat serverda.
+   ============================================================ */
+const API = { login:"/api/login", logout:"/api/logout", session:"/api/session", save:"/api/save-data" };
+let serverMode = false;   // /api ishlayaptimi
+let dirty = false;        // GitHub'ga chiqarilmagan o'zgarish bormi
 
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
@@ -256,24 +278,120 @@ function load(){
   try{ const d = localStorage.getItem(KEY); if(d){ D = JSON.parse(d); return; } }catch(e){}
   D = baseData();
 }
-function save(){
+function save(markDirty = true){
   D.contacts = D.contacts || {};
   try{
     localStorage.setItem(KEY, JSON.stringify(D));
-    $("#savedAt").textContent = "Saqlandi " + new Date().toLocaleTimeString("uz-UZ",{hour:"2-digit",minute:"2-digit"});
+    $("#savedAt").textContent = "Brauzerda saqlandi " + new Date().toLocaleTimeString("uz-UZ",{hour:"2-digit",minute:"2-digit"});
   }catch(e){
-    $("#savedAt").textContent = "Saqlanmadi — joy yetmadi";
-    toast("Brauzer xotirasi to'ldi. data.js ni yuklab oling.");
+    $("#savedAt").textContent = "Brauzerda saqlanmadi — joy yetmadi";
+    toast("Brauzer xotirasi to'ldi. Saytga chiqaring yoki data.js ni yuklab oling.");
+  }
+  if(markDirty){
+    dirty = true;
+    if(serverMode) setGh("warn", "GitHub'ga chiqarilmagan o'zgarishlar bor");
+  }
+}
+function setGh(kind, text){
+  const el = $("#ghState");
+  el.className = "badge" + (kind ? " " + kind : "");
+  el.textContent = text;
+}
+
+/* ---- kirish: parol serverda tekshiriladi ---- */
+function unlock(){
+  $("#gate").style.display = "none";
+  $("#offlineBar").classList.toggle("on", !serverMode);
+  const pb = $("#publishBtn");
+  pb.disabled = !serverMode;
+  pb.title = serverMode ? "" : "Lokal rejimda mavjud emas";
+}
+async function enter(){
+  const btn = $("#gateBtn");
+  $("#gateErr").textContent = "";
+  btn.disabled = true;
+  try{
+    const r = await fetch(API.login, {
+      method:"POST", credentials:"same-origin",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ password: $("#gatePass").value })
+    });
+    let j = {}; try{ j = await r.json(); }catch(e){}
+    if(r.ok && j.ok){ serverMode = true; setGh("", "GitHub: tayyor"); unlock(); }
+    else if(r.status === 401){ $("#gateErr").textContent = j.error || "Parol noto'g'ri."; }
+    else { $("#gateErr").textContent = j.error || ("Server xatosi (" + r.status + ")."); showLocalOption(); }
+  }catch(e){
+    $("#gateErr").textContent = "Serverga ulanib bo'lmadi.";
+    showLocalOption();
+  }finally{ btn.disabled = false; }
+}
+function showLocalOption(){
+  $("#gateLocal").style.display = "inline-flex";
+  $("#gateHint").textContent = "Server topilmadi yoki sozlanmagan. Lokal rejimda o'zgarishlar faqat shu brauzerda saqlanadi.";
+}
+$("#gateBtn").onclick = enter;
+$("#gateLocal").onclick = () => { serverMode = false; setGh("warn", "Lokal rejim"); unlock(); };
+$("#gatePass").addEventListener("keydown", e => { if(e.key === "Enter") enter(); });
+
+/* sahifa ochilganda: server bormi, sessiya hali amal qiladimi? */
+async function bootSession(){
+  try{
+    const r = await fetch(API.session, { credentials:"same-origin" });
+    if(!r.ok) throw new Error("no api");
+    const j = await r.json();
+    if(!j || j.ok !== true) throw new Error("no api");
+    serverMode = true;
+    setGh(j.configured ? "" : "warn", j.configured ? "GitHub: tayyor" : "Server sozlanmagan (env)");
+    if(j.auth) unlock();
+  }catch(e){
+    serverMode = false;
+    setGh("warn", "Lokal rejim (server yo'q)");
+    showLocalOption();
   }
 }
 
-/* ---- gate ---- */
-function enter(){
-  if($("#gatePass").value === PASS){ $("#gate").style.display = "none"; }
-  else $("#gateErr").textContent = "Parol noto'g'ri.";
+/* ---- saytga chiqarish: server → GitHub ---- */
+async function publish(){
+  if(!serverMode){ toast("Lokal rejim: data.js ni yuklab oling"); return; }
+  const btn = $("#publishBtn");
+  btn.disabled = true;
+  setGh("warn", "GitHub'ga yuborilmoqda…");
+  try{
+    const payload = JSON.stringify({ data: D });
+    if(payload.length > 3.8 * 1024 * 1024){
+      setGh("err", "Ma'lumot juda katta");
+      toast("Rasmlarni bo'lib-bo'lib saqlang");
+      return;
+    }
+    const r = await fetch(API.save, {
+      method:"POST", credentials:"same-origin",
+      headers:{"Content-Type":"application/json"},
+      body: payload
+    });
+    let j = {}; try{ j = await r.json(); }catch(e){}
+    if(r.status === 401){
+      setGh("err", "Sessiya tugadi — qaytadan kiring");
+      $("#gate").style.display = "grid";
+      $("#gateErr").textContent = "Sessiya tugadi. Parolni qaytadan kiriting.";
+      return;
+    }
+    if(!r.ok || !j.ok){
+      setGh("err", "GitHub'ga saqlashda xatolik");
+      toast(j.error || "GitHub'ga saqlashda xatolik");
+      return;
+    }
+    if(j.data){ D = j.data; save(false); renderAll(); }   // rasmlar endi images/... yo'li bilan keladi
+    dirty = false;
+    const sha = (j.commit || "").slice(0,7);
+    setGh("ok", j.unchanged ? "GitHub: o'zgarish yo'q" : ("GitHub'ga saqlandi · " + sha));
+    toast(j.unchanged ? "O'zgarish topilmadi" : "GitHub'ga saqlandi");
+  }catch(e){
+    setGh("err", "Tarmoq xatosi — brauzerda saqlanib qoldi");
+    toast("Internet yo'q. O'zgarishlar yo'qolmadi.");
+  }finally{
+    btn.disabled = !serverMode;
+  }
 }
-$("#gateBtn").onclick = enter;
-$("#gatePass").addEventListener("keydown", e => { if(e.key === "Enter") enter(); });
 
 /* ---- tabs ---- */
 $$('.tabs button').forEach(b => b.onclick = () => {
@@ -475,9 +593,20 @@ $("#resetBtn").onclick = () => {
   D = baseData(); save(); renderAll(); toast("Boshlang'ich holat qaytarildi");
 };
 
+$("#publishBtn").onclick = publish;
+$("#logoutBtn").onclick = async () => {
+  if(dirty && !confirm("GitHub'ga chiqarilmagan o'zgarishlar bor. Baribir chiqasizmi?")) return;
+  try{ await fetch(API.logout, { method:"POST", credentials:"same-origin" }); }catch(e){}
+  location.reload();
+};
+addEventListener("beforeunload", e => {
+  if(dirty && serverMode){ e.preventDefault(); e.returnValue = ""; }
+});
+
 function renderAll(){ renderList(); renderMedia(); renderContacts(); }
 load(); renderAll();
 $("#savedAt").textContent = "Tayyor";
+bootSession();
 </script>
 </body>
 </html>
