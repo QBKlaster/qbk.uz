@@ -1,0 +1,6 @@
+# Maxfiy ma'lumotlar — hech qachon GitHub'ga tushmasin
+.env
+.env.local
+.env.*.local
+.vercel
+node_modules
