@@ -398,8 +398,8 @@ textarea{resize:vertical;min-height:104px}
         </div>
         <label><span class="mono" data-i18n="fMessage">Qo'shimcha ma'lumot</span><textarea name="message" data-i18n-placeholder="fMessagePH"></textarea></label>
         <button type="submit" class="btn btn-y" data-i18n="fSubmit">So'rov yuborish</button>
-        <p class="form-note" data-i18n="fNote">Tugmani bosganingizda ma'lumotlar elektron pochta xatiga joylanadi.</p>
-        <div class="form-ok" id="formOk" data-i18n="fOk">So'rov tayyor — pochta ilovangizda xat ochildi.</div>
+        <p class="form-note" data-i18n="fNote">So'rovingiz to'g'ridan-to'g'ri bizga yetib boradi. Shoshilinch bo'lsa, qo'ng'iroq ham qilishingiz mumkin.</p>
+        <div class="form-ok" id="formOk" data-i18n="fOk">Rahmat! So'rovingiz qabul qilindi — tez orada bog'lanamiz.</div>
       </form>
     </div>
   </div>
@@ -476,8 +476,8 @@ uz:{title:"Qarshi Beton Klaster — temir-beton mahsulotlar va tovar beton",bran
  cPhone:"Telefon",cMail:"Elektron pochta",cAddr:"Manzil",cHours:"Ish vaqti",
  fName:"Ism / Tashkilot",fPhone:"Telefon",fProduct:"Mahsulot",fVolume:"Soni / hajmi",fMessage:"Qo'shimcha ma'lumot",
  fMessagePH:"Obyekt manzili, yetkazib berish muddati, o'lchamlar...",fSubmit:"So'rov yuborish",
- fNote:"Tugmani bosganingizda ma'lumotlar elektron pochta xatiga joylanadi. Xohlasangiz, to'g'ridan-to'g'ri qo'ng'iroq ham qilishingiz mumkin.",
- fOk:"So'rov tayyor — pochta ilovangizda xat ochildi. Agar ochilmasa, to'g'ridan-to'g'ri yozing.",
+ fNote:"So'rovingiz to'g'ridan-to'g'ri bizga yetib boradi. Shoshilinch bo'lsa, qo'ng'iroq ham qilishingiz mumkin.",
+ fOk:"Rahmat! So'rovingiz qabul qilindi — tez orada bog'lanamiz.",
  fErr:"Iltimos, ism va telefon raqamini to'ldiring.",mailSubject:"Sayt orqali so'rov",
  ftrTag:"Qarshi · Qashqadaryo · O'zbekiston"},
 ru:{title:"Qarshi Beton Klaster — железобетонные изделия и товарный бетон",brandTag:"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ",
@@ -510,8 +510,8 @@ ru:{title:"Qarshi Beton Klaster — железобетонные изделия 
  cPhone:"Телефон",cMail:"Электронная почта",cAddr:"Адрес",cHours:"Режим работы",
  fName:"Имя / Организация",fPhone:"Телефон",fProduct:"Продукция",fVolume:"Количество / объём",fMessage:"Дополнительная информация",
  fMessagePH:"Адрес объекта, срок поставки, размеры...",fSubmit:"Отправить заявку",
- fNote:"При нажатии данные подставляются в письмо. При желании можно просто позвонить нам.",
- fOk:"Заявка готова — письмо открылось в почтовом приложении. Если нет, напишите нам напрямую.",
+ fNote:"Заявка приходит к нам напрямую. Если срочно — просто позвоните.",
+ fOk:"Спасибо! Заявка принята — мы свяжемся с вами в ближайшее время.",
  fErr:"Пожалуйста, укажите имя и телефон.",mailSubject:"Заявка с сайта",
  ftrTag:"Карши · Кашкадарья · Узбекистан"},
 en:{title:"Qarshi Beton Klaster — precast concrete products and ready-mix",brandTag:"LIMITED LIABILITY COMPANY",
@@ -544,8 +544,8 @@ en:{title:"Qarshi Beton Klaster — precast concrete products and ready-mix",bra
  cPhone:"Phone",cMail:"Email",cAddr:"Address",cHours:"Working hours",
  fName:"Name / Company",fPhone:"Phone",fProduct:"Product",fVolume:"Quantity / volume",fMessage:"Additional details",
  fMessagePH:"Site address, delivery date, dimensions...",fSubmit:"Send request",
- fNote:"The button drops your details into an email. You are also welcome to simply call us.",
- fOk:"Your request is ready — an email opened in your mail app. If it did not, write to us directly.",
+ fNote:"Your request reaches us directly. If it is urgent, feel free to call.",
+ fOk:"Thank you! Your request has been received — we will contact you shortly.",
  fErr:"Please add your name and phone number.",mailSubject:"Website request",
  ftrTag:"Qarshi · Kashkadarya · Uzbekistan"}};
 
@@ -651,23 +651,66 @@ addEventListener("scroll", onScroll, {passive:true}); onScroll();
 burger.onclick = () => { const o = nav.classList.toggle("open"); burger.setAttribute("aria-expanded", String(o)); };
 $$("#nav a").forEach(a => a.onclick = () => { nav.classList.remove("open"); burger.setAttribute("aria-expanded","false"); });
 
-$("#orderForm").addEventListener("submit", e => {
+/* ==== BUYURTMA FORMASI: server orqali Telegramga ==== */
+const ORDER_MSG = {
+  uz:{ send:"Yuborilmoqda…", ok:"Rahmat! So'rovingiz qabul qilindi — tez orada bog'lanamiz.",
+       fallback:"So'rov pochta xatiga joylandi. Yuborilmasa, qo'ng'iroq qiling:", again:"So'rov yuborish" },
+  ru:{ send:"Отправляется…", ok:"Спасибо! Заявка принята — мы свяжемся с вами в ближайшее время.",
+       fallback:"Заявка подставлена в письмо. Если не отправилась — позвоните:", again:"Отправить заявку" },
+  en:{ send:"Sending…", ok:"Thank you! Your request has been received — we will contact you shortly.",
+       fallback:"Your request was placed into an email. If it did not send, call us:", again:"Send request" }
+};
+const formOpenedAt = Date.now();
+
+$("#orderForm").addEventListener("submit", async e => {
   e.preventDefault();
   const el = e.target.elements;
   const name = el.name.value.trim(), phone = el.phone.value.trim();
   if(!name || !phone){ alert(T[lang].fErr); return; }
   const prod = P().find(p => p.id === el.product.value);
-  const body = [
-    T[lang].fName + ": " + name,
-    T[lang].fPhone + ": " + phone,
-    T[lang].fProduct + ": " + (prod ? loc(prod,lang).n : ""),
-    T[lang].fVolume + ": " + el.volume.value.trim(), "",
-    el.message.value.trim()
-  ].join("\n");
-  location.href = "mailto:" + ((DATA.contacts||{}).email || "") +
-    "?subject=" + encodeURIComponent(T[lang].mailSubject + " — " + name) +
-    "&body=" + encodeURIComponent(body);
-  $("#formOk").classList.add("on");
+  const payload = {
+    name, phone,
+    product: prod ? loc(prod, lang).n : "",
+    volume: el.volume.value.trim(),
+    message: el.message.value.trim(),
+    lang, t: Date.now() - formOpenedAt, hp: ""
+  };
+  const btn = e.target.querySelector('button[type="submit"]');
+  const okBox = $("#formOk");
+  const M = ORDER_MSG[lang] || ORDER_MSG.uz;
+  btn.disabled = true; btn.textContent = M.send;
+  try{
+    const r = await fetch("/api/order", {
+      method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload)
+    });
+    let j = {}; try{ j = await r.json(); }catch(err){}
+    if(r.ok && j.ok){
+      okBox.textContent = M.ok;
+      okBox.classList.add("on");
+      e.target.reset();
+      btn.textContent = M.again;
+    }else{
+      throw new Error(j.error || "server");
+    }
+  }catch(err){
+    /* Server yoki bot hali ulanmagan bo'lsa — eski usul: pochta ilovasi ochiladi.
+       Bot ulangach bu qism umuman ishlamaydi, hammasi Telegramga ketadi. */
+    const body = [
+      T[lang].fName + ": " + name,
+      T[lang].fPhone + ": " + phone,
+      T[lang].fProduct + ": " + payload.product,
+      T[lang].fVolume + ": " + payload.volume, "",
+      payload.message
+    ].join("\n");
+    location.href = "mailto:" + ((DATA.contacts||{}).email || "") +
+      "?subject=" + encodeURIComponent(T[lang].mailSubject + " — " + name) +
+      "&body=" + encodeURIComponent(body);
+    okBox.textContent = M.fallback + " " + ((DATA.contacts||{}).phone || "");
+    okBox.classList.add("on");
+    btn.textContent = M.again;
+  }finally{
+    btn.disabled = false;
+  }
 });
 
 const io = new IntersectionObserver(es => es.forEach(en => {
