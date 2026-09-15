@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Admin panel va API qidiruv tizimlariga kerak emas
+Disallow: /admin.html
+Disallow: /api/
+
+Sitemap: https://qarshibetonklaster.uz/sitemap.xml
