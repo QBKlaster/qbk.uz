@@ -177,7 +177,10 @@ export default async function handler(req, res) {
   let data;
   try { data = await loadData(); }
   catch (e) {
-    return html(res, 500, `<!doctype html><meta charset="utf-8"><p>Ma'lumotni o'qib bo'lmadi.</p>`);
+    return html(res, 500,
+      `<!doctype html><meta charset="utf-8"><title>Xatolik</title>` +
+      `<p style="font-family:sans-serif;padding:30px">Ma'lumotni o'qib bo'lmadi.</p>` +
+      `<!-- ${String(e.message || e).replace(/-->/g, "")} -->`);
   }
 
   const list = kind === "product" ? data.products : data.projects;

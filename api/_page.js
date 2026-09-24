@@ -41,10 +41,35 @@ const TTL = 60 * 1000;
 
 export async function loadData() {
   if (cache && Date.now() - cacheAt < TTL) return cache;
-  const base = process.env.DATA_BASE || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : SITE);
-  const r = await fetch(`${base}/data.js`, { headers: { "cache-control": "no-cache" } });
-  if (!r.ok) throw new Error("data.js o'qilmadi: " + r.status);
-  const text = await r.text();
+
+  // Manbalar navbati: sozlama → asosiy domen → Vercel ichki manzili → fayl tizimi
+  const tries = [];
+  if (process.env.DATA_BASE) tries.push(`${process.env.DATA_BASE}/data.js`);
+  tries.push(`${SITE}/data.js`);
+  if (process.env.VERCEL_URL) tries.push(`https://${process.env.VERCEL_URL}/data.js`);
+
+  let text = null, lastErr = "";
+  for (const url of tries) {
+    try {
+      const r = await fetch(url, { headers: { "cache-control": "no-cache" } });
+      if (r.ok) { text = await r.text(); break; }
+      lastErr = `${url} → ${r.status}`;
+    } catch (e) { lastErr = `${url} → ${e.message}`; }
+  }
+
+  // Oxirgi chora: fayl tizimidan o'qish
+  if (text === null) {
+    try {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+      for (const f of [path.join(process.cwd(), "data.js"), path.join(process.cwd(), "public", "data.js")]) {
+        if (fs.existsSync(f)) { text = fs.readFileSync(f, "utf8"); break; }
+      }
+    } catch (e) { lastErr += " | fs: " + e.message; }
+  }
+
+  if (text === null) throw new Error("data.js topilmadi. " + lastErr);
+
   const i = text.indexOf("{");
   const obj = JSON.parse(text.slice(i).trim().replace(/;\s*$/, ""));
   obj.products = withSlugs(obj.products || []);
