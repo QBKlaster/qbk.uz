@@ -246,6 +246,24 @@ button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
 .sr-note{margin-top:22px;border-left:3px solid var(--signal);padding-left:16px;font-size:14.5px;color:var(--concrete);display:none}
 .sr-on .sr-note{display:block}
 
+/* obyektlar */
+.prgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px}
+.prcard{background:var(--white);border:1px solid var(--line);display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s,border-color .25s}
+.prcard:hover{transform:translateY(-4px);box-shadow:0 18px 34px rgba(27,25,23,.13);border-color:rgba(27,25,23,.3)}
+.prfig{position:relative;height:210px;background:linear-gradient(158deg,#E7E5E0,#CDCAC2);overflow:hidden}
+.prfig img{width:100%;height:100%;object-fit:cover}
+.prfig .cnt{position:absolute;right:12px;bottom:12px;background:rgba(27,25,23,.82);color:var(--white);padding:4px 9px;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em}
+.pryear{position:absolute;top:12px;left:12px;background:var(--signal);color:var(--ink);padding:5px 10px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;font-weight:600;z-index:2}
+.prbody{padding:22px;display:flex;flex-direction:column;flex:1}
+.prbody h3{font-size:21px;line-height:1.05}
+.prmeta{margin-top:12px;display:grid;gap:6px}
+.prmeta div{display:flex;gap:10px;font-size:13.5px;color:var(--stone)}
+.prmeta b{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--signal-dim);flex:none;width:92px;padding-top:3px}
+.prbody>p{margin-top:14px;color:var(--slate);font-size:14.5px;line-height:1.55}
+.pritems{margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--line);list-style:none;display:grid;gap:7px}
+.pritems li{display:flex;gap:10px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--slate)}
+.pritems li::before{content:"";width:6px;height:6px;flex:none;margin-top:6px;background:var(--signal)}
+
 /* production / quarry band */
 .about{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(30px,5vw,64px);align-items:start}
 .about-body p+p{margin-top:16px}
@@ -339,6 +357,7 @@ textarea{resize:vertical;min-height:104px}
     <nav class="nav" id="nav">
       <a href="#products" data-i18n="navProducts">Mahsulotlar</a>
       <a href="#grades" data-i18n="navGrades">Beton markalari</a>
+      <a href="#projects" data-i18n="navProjects">Obyektlar</a>
       <a href="#production" data-i18n="navProduction">Ishlab chiqarish</a>
       <a href="#order" data-i18n="navOrder">Buyurtma</a>
       <a href="#contact" data-i18n="navContact">Aloqa</a>
@@ -436,6 +455,17 @@ textarea{resize:vertical;min-height:104px}
         <div class="sr-note" id="srNote" data-i18n="srNote">SR beton sulfatli grunt va yer osti suvlari ta'siriga chidamli.</div>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="sec sec-stone" id="projects">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="mono" data-i18n="kProjects">Obyektlar</div>
+      <h2 data-i18n="projH">Mahsulotlarimiz ishlatilgan obyektlar</h2>
+      <p data-i18n="projSub">Yirik infratuzilma va qurilish loyihalari uchun yetkazib berilgan temir-beton mahsulotlar.</p>
+    </div>
+    <div class="prgrid" id="prgrid"></div>
   </div>
 </section>
 
@@ -569,7 +599,8 @@ const GRADES = [
 /* ==== interfeys matnlari ==== */
 const T = {
 uz:{title:"Temir-beton mahsulotlar zavodi — Qarshi Beton Klaster | Qarshi",brandTag:"MAS'ULIYATI CHEKLANGAN JAMIYAT",
- navProducts:"Mahsulotlar",navGrades:"Beton markalari",navProduction:"Ishlab chiqarish",navOrder:"Buyurtma",navContact:"Aloqa",
+ navProducts:"Mahsulotlar",navGrades:"Beton markalari",navProjects:"Obyektlar",navProduction:"Ishlab chiqarish",navOrder:"Buyurtma",navContact:"Aloqa",
+ kProjects:"Obyektlar",projH:"Mahsulotlarimiz ishlatilgan obyektlar",projSub:"Yirik infratuzilma va qurilish loyihalari uchun yetkazib berilgan temir-beton mahsulotlar.",prClient:"Buyurtmachi",prLoc:"Joylashuvi",prItems:"Yetkazilgan mahsulotlar",projEmpty:"Obyektlar ro\'yxati tez orada to\'ldiriladi.",
  heroEyebrow:"Qashqadaryo viloyati · Qarshi shahri",heroT1:"Temir-beton",heroT2:"buyumlari",heroT3:"zavodi",
  heroSub:"Panjara panellari, kabel kanallari, quduq halqalari, stoykalar, bordyurlar, lotoklar va qavat plitalari — standart o'lchamda omborda, nostandarti chizmangiz bo'yicha.",
  ctaCatalog:"Katalogni ko'rish",ctaQuote:"Narx so'rash",
@@ -603,7 +634,8 @@ uz:{title:"Temir-beton mahsulotlar zavodi — Qarshi Beton Klaster | Qarshi",bra
  fErr:"Iltimos, ism va telefon raqamini to'ldiring.",mailSubject:"Sayt orqali so'rov",
  ftrTag:"Qarshi · Qashqadaryo · O'zbekiston"},
 ru:{title:"Завод железобетонных изделий — Qarshi Beton Klaster | Карши",brandTag:"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ",
- navProducts:"Продукция",navGrades:"Марки бетона",navProduction:"Производство",navOrder:"Заказ",navContact:"Контакты",
+ navProducts:"Продукция",navGrades:"Марки бетона",navProjects:"Объекты",navProduction:"Производство",navOrder:"Заказ",navContact:"Контакты",
+ kProjects:"Объекты",projH:"Объекты, где применялась наша продукция",projSub:"Железобетонные изделия, поставленные для крупных инфраструктурных и строительных проектов.",prClient:"Заказчик",prLoc:"Расположение",prItems:"Поставленная продукция",projEmpty:"Список объектов скоро будет заполнен.",
  heroEyebrow:"Кашкадарьинская область · город Карши",heroT1:"Завод",heroT2:"железобетонных",heroT3:"изделий",
  heroSub:"Панели ограждения, кабельные каналы, кольца колодцев, стойки, бордюры, лотки и плиты перекрытия — стандартные размеры со склада, нестандартные по вашему чертежу.",
  ctaCatalog:"Открыть каталог",ctaQuote:"Запросить цену",
@@ -637,7 +669,8 @@ ru:{title:"Завод железобетонных изделий — Qarshi Bet
  fErr:"Пожалуйста, укажите имя и телефон.",mailSubject:"Заявка с сайта",
  ftrTag:"Карши · Кашкадарья · Узбекистан"},
 en:{title:"Precast concrete works — Qarshi Beton Klaster | Qarshi, Uzbekistan",brandTag:"LIMITED LIABILITY COMPANY",
- navProducts:"Products",navGrades:"Concrete grades",navProduction:"Production",navOrder:"Ordering",navContact:"Contact",
+ navProducts:"Products",navGrades:"Concrete grades",navProjects:"Projects",navProduction:"Production",navOrder:"Ordering",navContact:"Contact",
+ kProjects:"Projects",projH:"Projects built with our products",projSub:"Precast concrete supplied for major infrastructure and construction projects.",prClient:"Client",prLoc:"Location",prItems:"Products supplied",projEmpty:"The project list will be published shortly.",
  heroEyebrow:"Kashkadarya region · Qarshi city",heroT1:"Precast",heroT2:"concrete",heroT3:"works",
  heroSub:"Fence panels, cable channels, manhole rings, posts, curbs, trays and floor slabs — standard sizes in stock, non-standard made to your drawing.",
  ctaCatalog:"Open the catalog",ctaQuote:"Request a price",
@@ -713,6 +746,32 @@ function renderProducts(){
   $$("#pgrid .pask").forEach(a => a.onclick = () => { const s = $("#fProduct"); if(s) s.value = a.dataset.pick; });
   $("#statProducts").textContent = P().length;
 }
+function renderProjects(){
+  const box = $("#prgrid");
+  if(!box) return;
+  const list = (DATA.projects || []);
+  if(!list.length){ box.innerHTML = `<p class="empty">${T[lang].projEmpty}</p>`; return; }
+  box.innerHTML = list.map(o => {
+    const t = o[lang] || o.uz || o.ru || o.en || {};
+    const imgs = Array.isArray(o.img) ? o.img : (o.img ? [o.img] : []);
+    const fig = imgs.length
+      ? `<img src="${imgs[0]}" alt="${esc(t.n)}" loading="lazy">${imgs.length>1?`<span class="cnt">+${imgs.length-1}</span>`:""}`
+      : "";
+    const items = (t.s||[]).filter(Boolean).map(x => `<li>${esc(x)}</li>`).join("");
+    return `<article class="prcard">
+      <div class="prfig">${o.year?`<span class="pryear">${esc(o.year)}</span>`:""}${fig}</div>
+      <div class="prbody">
+        <h3>${esc(t.n||"")}</h3>
+        <div class="prmeta">
+          ${t.c?`<div><b>${T[lang].prClient}</b><span>${esc(t.c)}</span></div>`:""}
+          ${t.l?`<div><b>${T[lang].prLoc}</b><span>${esc(t.l)}</span></div>`:""}
+        </div>
+        ${t.d?`<p>${esc(t.d)}</p>`:""}
+        ${items?`<ul class="pritems">${items}</ul>`:""}
+      </div></article>`;
+  }).join("");
+}
+
 function renderSelect(){
   const s = $("#fProduct"), cur = s.value;
   s.innerHTML = P().map(p => `<option value="${esc(p.id)}">${esc(loc(p,lang).n)}</option>`).join("");
@@ -761,7 +820,7 @@ function applyLang(l){
   $$("[data-i18n]").forEach(el => { const v = T[l][el.dataset.i18n]; if(v !== undefined) el.innerHTML = v; });
   $$("[data-i18n-placeholder]").forEach(el => { const v = T[l][el.dataset.i18nPlaceholder]; if(v) el.placeholder = v; });
   $$(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === l)));
-  renderFilters(); renderProducts(); renderSelect(); renderChips(); renderGrade(); renderContacts();
+  renderFilters(); renderProducts(); renderProjects(); renderSelect(); renderChips(); renderGrade(); renderContacts();
 }
 
 $$(".lang button").forEach(b => b.onclick = () => applyLang(b.dataset.lang));

@@ -91,6 +91,16 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
 .offline.on{display:block}
 .btn[disabled]{opacity:.5;cursor:not-allowed}
 .ghint{color:var(--stone);font-size:12px;margin:14px 0 0;line-height:1.5}
+#prEditor{position:fixed;inset:0;background:rgba(12,11,10,.86);z-index:70;display:none;overflow:auto;padding:24px}
+#prEditor.on{display:block}
+.prthumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.prthumb{position:relative;width:96px;height:72px;background:linear-gradient(158deg,#E7E5E0,#CDCAC2);overflow:hidden;display:grid;place-items:center}
+.prthumb img{max-width:100%;max-height:100%;object-fit:contain}
+.prthumb button{position:absolute;top:2px;right:2px;width:22px;height:22px;background:rgba(27,25,23,.85);color:#fff;font-size:13px;line-height:1}
+.prthumb button:hover{background:var(--red)}
+.prlinks{max-height:150px;overflow:auto;border:1px solid var(--line);padding:10px}
+.prlinks label{display:flex;gap:8px;align-items:center;font-size:13.5px;padding:3px 0;cursor:pointer}
+.prlinks input{width:auto}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(220%);background:var(--signal);color:var(--ink);padding:12px 20px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;transition:transform .3s;z-index:95}
 .toast.on{transform:translateX(-50%) translateY(0)}
 @media (max-width:700px){.grid2{grid-template-columns:1fr}.drop{flex-direction:column;align-items:flex-start}}
@@ -114,11 +124,13 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
   <div class="hin">
     <span class="mark">QBK</span>
     <h1>Sayt boshqaruvi</h1>
-    <span class="saved" id="savedAt">—</span>
+    <button class="btn btn-y" id="publishBtn" style="margin-left:auto">Saqlash va saytga chiqarish</button>
+    <span class="saved" id="savedAt" style="margin-left:0">—</span>
     <span class="badge" id="ghState">GitHub: tekshirilmoqda…</span>
   </div>
   <div class="tabs" role="tablist">
     <button role="tab" data-tab="products" aria-selected="true">Mahsulotlar</button>
+    <button role="tab" data-tab="projects" aria-selected="false">Obyektlar</button>
     <button role="tab" data-tab="media" aria-selected="false">Sayt rasmlari</button>
     <button role="tab" data-tab="contacts" aria-selected="false">Aloqa</button>
     <button role="tab" data-tab="help" aria-selected="false">Qo'llanma</button>
@@ -132,7 +144,6 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
   </div>
   <section class="panel on" id="p-products">
     <div class="bar">
-      <button class="btn btn-y" id="publishBtn">Saqlash va saytga chiqarish</button>
       <button class="btn" id="addBtn">+ Yangi mahsulot</button>
       <a class="btn" href="index.html?preview=1" target="_blank">Saytni ko'rish</a>
       <button class="btn" id="exportBtn">data.js yuklab olish</button>
@@ -142,6 +153,14 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
       <button class="btn" id="logoutBtn">Chiqish</button>
     </div>
     <div id="list"></div>
+  </section>
+
+  <section class="panel" id="p-projects">
+    <div class="bar">
+      <button class="btn btn-y" id="addPrBtn">+ Yangi obyekt</button>
+      <span class="hint" style="align-self:center">Yetkazib berilgan obyektlar — saytdagi «Obyektlar» bo'limida chiqadi.</span>
+    </div>
+    <div id="prList"></div>
   </section>
 
   <section class="panel" id="p-media">
@@ -247,6 +266,37 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
       <div id="langPanels"></div>
     </div>
     <div class="efoot"><button class="btn btn-y" id="eSave">Saqlash</button><button class="btn" id="eCancel">Bekor qilish</button></div>
+  </div>
+</div>
+
+<div id="prEditor">
+  <div class="ecard">
+    <div class="ehead"><h2 id="prTitle">Obyekt</h2><button class="btn" id="prClose">Yopish</button></div>
+    <div class="ebody">
+      <div class="drop" id="prDrop">
+        <div class="prev" id="prPrev"><span>rasm yo'q</span></div>
+        <div><b>Obyekt rasmlari</b>
+          <div class="hint">Bosing yoki fayllarni shu yerga tashlang. Bir nechta rasm qo'shish mumkin (8 tagacha).</div>
+        </div>
+      </div>
+      <div id="prThumbs" class="prthumbs"></div>
+
+      <div class="grid2" style="margin-top:20px">
+        <div class="field"><span class="mono">Yili</span><input id="prYear" placeholder="2025–2026"></div>
+        <div class="field"><span class="mono">Katalogdagi mahsulotlar bilan bog'lash</span>
+          <div id="prLinks" class="prlinks"></div>
+          <div class="hint">Belgilanganlari obyekt sahifasida havola bo'lib chiqadi.</div>
+        </div>
+      </div>
+
+      <div class="langtabs" role="tablist">
+        <button role="tab" data-pl="uz" aria-selected="true">O'zbekcha</button>
+        <button role="tab" data-pl="ru" aria-selected="false">Ruscha</button>
+        <button role="tab" data-pl="en" aria-selected="false">Inglizcha</button>
+      </div>
+      <div id="prPanels"></div>
+    </div>
+    <div class="efoot"><button class="btn btn-y" id="prSave">Saqlash</button><button class="btn" id="prCancel">Bekor qilish</button></div>
   </div>
 </div>
 
@@ -603,7 +653,114 @@ addEventListener("beforeunload", e => {
   if(dirty && serverMode){ e.preventDefault(); e.returnValue = ""; }
 });
 
-function renderAll(){ renderList(); renderMedia(); renderContacts(); }
+/* ================= OBYEKTLAR ================= */
+let prEditIdx = -1, prImgs = [];
+const PR_LANGS = [["uz","O'zbekcha"],["ru","Ruscha"],["en","Inglizcha"]];
+
+function prAll(){ D.projects = D.projects || []; return D.projects; }
+function prName(o){ return (o.uz&&o.uz.n) || (o.ru&&o.ru.n) || (o.en&&o.en.n) || "(nomsiz)"; }
+
+function renderPrList(){
+  const ps = prAll();
+  $("#prList").innerHTML = ps.length ? ps.map((o,i) => {
+    const th = (o.img && o.img[0]) ? `<img src="${o.img[0]}" alt="">` : `<span>rasm<br>yo'q</span>`;
+    const meta = [o.year, (o.uz&&o.uz.c)||"", (o.uz&&o.uz.l)||""].filter(Boolean).join(" · ");
+    const cnt = (o.img||[]).length;
+    return `<div class="row">
+      <div class="thumb">${th}</div>
+      <div class="meta"><b>${prName(o).replace(/</g,"&lt;")}</b>
+        <span class="mono">${meta || "—"}${cnt>1 ? " · "+cnt+" rasm" : ""}</span></div>
+      <div class="acts">
+        <button class="icobtn" data-prup="${i}" title="Yuqoriga">↑</button>
+        <button class="icobtn" data-prdown="${i}" title="Pastga">↓</button>
+        <button class="icobtn" data-predit="${i}" title="Tahrirlash">✎</button>
+        <button class="icobtn del" data-prdel="${i}" title="O'chirish">✕</button>
+      </div></div>`;
+  }).join("") : `<p class="hint">Hozircha obyekt yo'q. “+ Yangi obyekt” tugmasini bosing.</p>`;
+
+  $$("#prList [data-predit]").forEach(b => b.onclick = () => openPr(+b.dataset.predit));
+  $$("#prList [data-prdel]").forEach(b => b.onclick = () => {
+    if(confirm("Obyekt o'chirilsinmi?")){ prAll().splice(+b.dataset.prdel,1); save(); renderPrList(); }
+  });
+  $$("#prList [data-prup]").forEach(b => b.onclick = () => prMove(+b.dataset.prup,-1));
+  $$("#prList [data-prdown]").forEach(b => b.onclick = () => prMove(+b.dataset.prdown,1));
+}
+function prMove(i,d){
+  const ps = prAll(), j = i+d;
+  if(j<0 || j>=ps.length) return;
+  [ps[i],ps[j]] = [ps[j],ps[i]];
+  save(); renderPrList();
+}
+function prPanelsHTML(o){
+  return PR_LANGS.map(([l,label]) => {
+    const t = (o && o[l]) || {};
+    const v = x => (x||"").replace(/"/g,"&quot;");
+    return `<div class="lp ${l==="uz"?"on":""}" data-prlp="${l}">
+      <div class="field"><span class="mono">Obyekt nomi (${label})</span><input data-pf="${l}.n" value="${v(t.n)}"></div>
+      <div class="grid2">
+        <div class="field"><span class="mono">Buyurtmachi (${label})</span><input data-pf="${l}.c" value="${v(t.c)}"></div>
+        <div class="field"><span class="mono">Joylashuvi (${label})</span><input data-pf="${l}.l" value="${v(t.l)}"></div>
+      </div>
+      <div class="field"><span class="mono">Qisqa izoh (${label})</span><textarea data-pf="${l}.d">${t.d||""}</textarea></div>
+      <div class="field"><span class="mono">Yetkazilgan mahsulotlar — har biri yangi qatorda (${label})</span><textarea data-pf="${l}.s" style="min-height:120px">${(t.s||[]).join("\n")}</textarea></div>
+    </div>`;
+  }).join("");
+}
+function prDrawThumbs(){
+  $("#prPrev").innerHTML = prImgs.length ? `<img src="${prImgs[0]}" alt="">` : `<span>rasm yo'q</span>`;
+  $("#prThumbs").innerHTML = prImgs.map((src,i) =>
+    `<div class="prthumb"><img src="${src}" alt=""><button data-rm="${i}" title="O'chirish">×</button></div>`).join("");
+  $$("#prThumbs [data-rm]").forEach(b => b.onclick = e => {
+    e.stopPropagation(); prImgs.splice(+b.dataset.rm,1); prDrawThumbs();
+  });
+}
+function openPr(i){
+  prEditIdx = i;
+  const o = i>=0 ? prAll()[i] : null;
+  prImgs = o ? (Array.isArray(o.img) ? o.img.slice() : (o.img ? [o.img] : [])) : [];
+  $("#prTitle").textContent = i>=0 ? "Obyektni tahrirlash" : "Yangi obyekt";
+  $("#prYear").value = o ? (o.year||"") : "";
+  const linked = new Set(o ? (o.products||[]) : []);
+  $("#prLinks").innerHTML = (D.products||[]).map(p =>
+    `<label><input type="checkbox" value="${p.id}" ${linked.has(p.id)?"checked":""}> ${((p.uz&&p.uz.n)||p.id).replace(/</g,"&lt;")}</label>`).join("")
+    || `<span class="hint">Katalogda mahsulot yo'q</span>`;
+  $("#prPanels").innerHTML = prPanelsHTML(o);
+  $$("#prEditor .langtabs button").forEach(b => {
+    b.setAttribute("aria-selected", String(b.dataset.pl==="uz"));
+    b.onclick = () => {
+      $$("#prEditor .langtabs button").forEach(x => x.setAttribute("aria-selected", String(x===b)));
+      $$("#prPanels .lp").forEach(pl => pl.classList.toggle("on", pl.dataset.prlp===b.dataset.pl));
+    };
+  });
+  prDrawThumbs();
+  $("#prEditor").classList.add("on");
+}
+function closePr(){ $("#prEditor").classList.remove("on"); }
+$("#prClose").onclick = closePr;
+$("#prCancel").onclick = closePr;
+$("#addPrBtn").onclick = () => openPr(-1);
+wireDrop($("#prDrop"), src => {
+  if(prImgs.length >= 8){ toast("8 tadan ko'p rasm qo'shib bo'lmaydi"); return; }
+  prImgs.push(src); prDrawThumbs();
+});
+$("#prSave").onclick = () => {
+  const g = f => { const el = $(`#prPanels [data-pf="${f}"]`); return el ? el.value.trim() : ""; };
+  if(!g("uz.n")){ toast("O'zbekcha nomini yozing."); return; }
+  const o = {
+    id: prEditIdx>=0 ? prAll()[prEditIdx].id : "o" + Date.now().toString(36),
+    year: $("#prYear").value.trim(),
+    img: prImgs.slice(),
+    products: $$("#prLinks input:checked").map(x => x.value)
+  };
+  PR_LANGS.forEach(([l]) => {
+    o[l] = { n:g(l+".n"), c:g(l+".c"), l:g(l+".l"), d:g(l+".d"),
+             s:g(l+".s").split("\n").map(x=>x.trim()).filter(Boolean) };
+  });
+  if(prEditIdx>=0) prAll()[prEditIdx] = o; else prAll().push(o);
+  save(); renderPrList(); closePr(); toast("Saqlandi");
+};
+
+function renderAll(){ renderList(); renderPrList(); renderMedia(); renderContacts(); }
 load(); renderAll();
 $("#savedAt").textContent = "Tayyor";
 bootSession();
