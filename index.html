@@ -718,8 +718,6 @@ if (new URLSearchParams(location.search).get("preview") === "1") {
     if (draft) { DATA = JSON.parse(draft); $("#pvBar").classList.add("on"); }
   } catch(e){}
 }
-DATA.products = withSlugs(DATA.products);
-DATA.projects = withSlugs(DATA.projects);
 const esc = s => String(s ?? "").replace(/[<>&"]/g, c => ({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
 const CYR_MAP = {"а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"yo","ж":"j","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"x","ц":"ts","ч":"ch","ш":"sh","щ":"sh","ъ":"","ы":"i","ь":"","э":"e","ю":"yu","я":"ya","ғ":"g","қ":"q","ҳ":"h","ў":"o"};
 function slugify(text){
@@ -740,6 +738,8 @@ function withSlugs(list){
   });
 }
 const langPath = () => (lang === "uz" ? "" : "/" + lang);
+DATA.products = withSlugs(DATA.products || []);
+DATA.projects = withSlugs(DATA.projects || []);
 const P = () => (DATA.products || []);
 const loc = (p, l) => p[l] || p.uz || p.ru || p.en || {n:"",d:"",s:[]};
 
