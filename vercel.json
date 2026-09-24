@@ -1,24 +1,24 @@
 {
+  "rewrites": [
+    { "source": "/mahsulot/:slug",     "destination": "/api/page?t=p&l=uz&s=:slug" },
+    { "source": "/ru/mahsulot/:slug",  "destination": "/api/page?t=p&l=ru&s=:slug" },
+    { "source": "/en/mahsulot/:slug",  "destination": "/api/page?t=p&l=en&s=:slug" },
+    { "source": "/obyekt/:slug",       "destination": "/api/page?t=o&l=uz&s=:slug" },
+    { "source": "/ru/obyekt/:slug",    "destination": "/api/page?t=o&l=ru&s=:slug" },
+    { "source": "/en/obyekt/:slug",    "destination": "/api/page?t=o&l=en&s=:slug" },
+    { "source": "/ru",                 "destination": "/index.html" },
+    { "source": "/ru/",                "destination": "/index.html" },
+    { "source": "/en",                 "destination": "/index.html" },
+    { "source": "/en/",                "destination": "/index.html" },
+    { "source": "/sitemap.xml",        "destination": "/api/sitemap" }
+  ],
   "headers": [
-    {
-      "source": "/data.js",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
-    },
-    {
-      "source": "/index.html",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
-    },
-    {
-      "source": "/admin.html",
-      "headers": [
+    { "source": "/data.js",   "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }] },
+    { "source": "/index.html","headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }] },
+    { "source": "/admin.html","headers": [
         { "key": "Cache-Control", "value": "no-store" },
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
-        { "key": "Referrer-Policy", "value": "no-referrer" }
-      ]
-    },
-    {
-      "source": "/images/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
-    }
+        { "key": "Referrer-Policy", "value": "no-referrer" }] },
+    { "source": "/images/(.*)","headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
   ]
 }
