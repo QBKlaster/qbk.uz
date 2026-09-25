@@ -91,6 +91,29 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
 .offline.on{display:block}
 .btn[disabled]{opacity:.5;cursor:not-allowed}
 .ghint{color:var(--stone);font-size:12px;margin:14px 0 0;line-height:1.5}
+/* tipo'lchamlar jadvali */
+.sizebox{margin-top:24px;border-top:1px solid var(--line);padding-top:20px}
+.sizehead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.sizehead b{font-family:"Fira Sans Extra Condensed",sans-serif;font-weight:800;text-transform:uppercase;font-size:17px}
+.sizehead .cnt{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;color:var(--stone)}
+.sizehead .sp{margin-left:auto;display:flex;gap:8px}
+.sizetbl{width:100%;border-collapse:collapse}
+.sizetbl th{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--stone);text-align:left;padding:0 6px 8px;font-weight:500}
+.sizetbl td{padding:3px 6px 3px 0;vertical-align:middle}
+.sizetbl td:first-child{padding-left:0}
+.sizetbl input[type=text]{padding:8px 10px;font-size:13.5px}
+.sizetbl tr.off input[type=text]{opacity:.4}
+.sizetbl .thin{width:52px;text-align:center}
+.sizetbl .act{width:104px;white-space:nowrap;text-align:right}
+.sizetbl .icobtn{width:30px;height:30px;font-size:12px;display:inline-grid}
+.swt{position:relative;display:inline-block;width:40px;height:22px;vertical-align:middle}
+.swt input{position:absolute;opacity:0;width:0;height:0}
+.swt i{position:absolute;inset:0;background:rgba(237,235,229,.18);transition:background .18s;cursor:pointer}
+.swt i::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--white);transition:transform .18s}
+.swt input:checked + i{background:#7FC98C}
+.swt input:checked + i::after{transform:translateX(18px)}
+.swt input:focus-visible + i{outline:2px solid var(--signal);outline-offset:2px}
+.sizeempty{color:var(--stone);font-size:13px;padding:10px 0}
 #prEditor{position:fixed;inset:0;background:rgba(12,11,10,.86);z-index:70;display:none;overflow:auto;padding:24px}
 #prEditor.on{display:block}
 .prthumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
@@ -258,6 +281,20 @@ main{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
             <option value="mix">Beton va inert materiallar</option>
           </select></div>
       </div>
+      <div class="sizebox">
+        <div class="sizehead">
+          <b>Tipo'lchamlar</b>
+          <span class="cnt" id="sizeCnt"></span>
+          <span class="sp">
+            <button class="btn" id="sizeAdd">+ Qator qo'shish</button>
+            <button class="btn" id="sizeAllOn">Hammasini yoqish</button>
+            <button class="btn" id="sizeAllOff">Hammasini o'chirish</button>
+          </span>
+        </div>
+        <div class="hint" style="margin-bottom:12px">Bir mahsulotning turli o'lchamlari. Saytda mahsulot sahifasi ichida jadval bo'lib chiqadi. Yashil tugma o'chirilgan qator saytda ko'rinmaydi, lekin bu yerda saqlanib qoladi.</div>
+        <div id="sizeWrap"></div>
+      </div>
+
       <div class="langtabs" role="tablist">
         <button role="tab" data-l="uz" aria-selected="true">O'zbekcha</button>
         <button role="tab" data-l="ru" aria-selected="false">Ruscha</button>
@@ -318,7 +355,7 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const LANGS = [["uz","O'zbekcha"],["ru","Ruscha"],["en","Inglizcha"]];
 const CATNAME = {rc:"Temir-beton buyumlar", road:"Yo'l elementlari", mix:"Beton va inert materiallar"};
 const KEY = "qbk_draft";
-let D = null, editIdx = -1, editImg = "";
+let D = null, editIdx = -1, editImg = "", editSizes = [];
 
 function toast(t){ const el = $("#toast"); el.textContent = t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"), 2200); }
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
@@ -528,6 +565,64 @@ function langPanelsHTML(p){
     </div>`;
   }).join("");
 }
+/* ---- tipo'lchamlar ---- */
+const SZ_COLS = [
+  ["c", "Marka / tipo'lcham", "\u041bK 60.45"],
+  ["d", "O'lchami", "600\u00d7450\u00d760 mm"],
+  ["w", "Og'irligi", "180 kg"],
+  ["v", "Hajmi / izoh", "0,07 m\u00b3"]
+];
+function renderSizes(){
+  const on = editSizes.filter(z => z.on !== false).length;
+  $("#sizeCnt").textContent = editSizes.length
+    ? editSizes.length + " ta qator \u00b7 saytda " + on + " ta" : "";
+  if(!editSizes.length){
+    $("#sizeWrap").innerHTML = '<p class="sizeempty">Tipo\'lcham qo\'shilmagan. Kerak bo\'lmasa bo\'sh qoldiring \u2014 saytda jadval umuman chiqmaydi.</p>';
+    return;
+  }
+  $("#sizeWrap").innerHTML = '<table class="sizetbl"><thead><tr><th class="thin">Saytda</th>'
+    + SZ_COLS.map(c => "<th>" + c[1] + "</th>").join("")
+    + '<th class="act"></th></tr></thead><tbody>'
+    + editSizes.map((z,i) => '<tr class="' + (z.on === false ? "off" : "") + '">'
+        + '<td class="thin"><label class="swt"><input type="checkbox" data-szon="' + i + '" ' + (z.on === false ? "" : "checked") + '><i></i></label></td>'
+        + SZ_COLS.map(c => '<td><input type="text" data-szf="' + i + "." + c[0] + '" value="'
+            + String(z[c[0]]||"").replace(/"/g,"&quot;") + '" placeholder="' + c[2] + '"></td>').join("")
+        + '<td class="act">'
+        + '<button class="icobtn" data-szup="' + i + '" title="Yuqoriga">\u2191</button>'
+        + '<button class="icobtn" data-szdn="' + i + '" title="Pastga">\u2193</button>'
+        + '<button class="icobtn del" data-szdel="' + i + '" title="O\'chirish">\u2715</button>'
+        + '</td></tr>').join("")
+    + "</tbody></table>";
+
+  $$("#sizeWrap [data-szf]").forEach(el => el.oninput = () => {
+    const parts = el.dataset.szf.split(".");
+    editSizes[+parts[0]][parts[1]] = el.value;
+  });
+  $$("#sizeWrap [data-szon]").forEach(el => el.onchange = () => {
+    editSizes[+el.dataset.szon].on = el.checked;
+    renderSizes();
+  });
+  $$("#sizeWrap [data-szdel]").forEach(b => b.onclick = () => {
+    editSizes.splice(+b.dataset.szdel, 1); renderSizes();
+  });
+  $$("#sizeWrap [data-szup]").forEach(b => b.onclick = () => szMove(+b.dataset.szup, -1));
+  $$("#sizeWrap [data-szdn]").forEach(b => b.onclick = () => szMove(+b.dataset.szdn, 1));
+}
+function szMove(i, d){
+  const j = i + d;
+  if(j < 0 || j >= editSizes.length) return;
+  const t = editSizes[i]; editSizes[i] = editSizes[j]; editSizes[j] = t;
+  renderSizes();
+}
+$("#sizeAdd").onclick = () => {
+  editSizes.push({c:"",d:"",w:"",v:"",on:true});
+  renderSizes();
+  const rows = $$("#sizeWrap [data-szf]").filter(x => x.dataset.szf.split(".")[0] === String(editSizes.length-1));
+  if(rows[0]) rows[0].focus();
+};
+$("#sizeAllOn").onclick = () => { editSizes.forEach(z => z.on = true); renderSizes(); };
+$("#sizeAllOff").onclick = () => { editSizes.forEach(z => z.on = false); renderSizes(); };
+
 function openEditor(i){
   editIdx = i;
   const p = i >= 0 ? D.products[i] : null;
@@ -535,6 +630,10 @@ function openEditor(i){
   $("#eTitle").textContent = i >= 0 ? "Mahsulotni tahrirlash" : "Yangi mahsulot";
   $("#eCode").value = p ? (p.code || "") : "";
   $("#eCat").value = p ? (p.cat || "rc") : "rc";
+  editSizes = (p && Array.isArray(p.sizes))
+    ? p.sizes.map(z => ({c:z.c||"", d:z.d||"", w:z.w||"", v:z.v||"", on: z.on === false ? false : true}))
+    : [];
+  renderSizes();
   $("#langPanels").innerHTML = langPanelsHTML(p);
   $$("#editor .langtabs button").forEach(b => {
     b.setAttribute("aria-selected", String(b.dataset.l === "uz"));
@@ -563,7 +662,10 @@ $("#eSave").onclick = () => {
     id: editIdx >= 0 ? D.products[editIdx].id : "p" + Date.now().toString(36),
     code: $("#eCode").value.trim(),
     cat: $("#eCat").value,
-    img: editImg
+    img: editImg,
+    sizes: editSizes
+      .map(z => ({c:(z.c||"").trim(), d:(z.d||"").trim(), w:(z.w||"").trim(), v:(z.v||"").trim(), on: z.on !== false}))
+      .filter(z => z.c || z.d || z.w || z.v)
   };
   LANGS.forEach(([l]) => {
     p[l] = {n:get(l+".n"), d:get(l+".d"), s:get(l+".s").split("\n").map(x=>x.trim()).filter(Boolean)};
