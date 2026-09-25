@@ -91,6 +91,8 @@ export { SITE, LANGS };
 export const UI = {
   uz: {
     back: "Katalogga qaytish", backPr: "Obyektlarga qaytish",
+    sizes: "Tipo'lchamlar", sizesNote: "Quyidagi o'lchamlar omborda yoki buyurtma asosida tayyorlanadi.",
+    sizesCount: "{n} ta tipo'lcham", szMark: "Marka", szDim: "O'lchami", szWeight: "Og'irligi", szVol: "Hajmi",
     specs: "Xususiyatlari", usedIn: "Ushbu mahsulot ishlatilgan obyektlar",
     supplied: "Yetkazilgan mahsulotlar", client: "Buyurtmachi", loc: "Joylashuvi", year: "Yili",
     order: "Narx so'rash", orderH: "Narx va muddatni so'rang",
@@ -104,6 +106,8 @@ export const UI = {
   },
   ru: {
     back: "Вернуться в каталог", backPr: "Вернуться к объектам",
+    sizes: "Типоразмеры", sizesNote: "Указанные размеры есть на складе или изготавливаются под заказ.",
+    sizesCount: "{n} типоразмеров", szMark: "Марка", szDim: "Размер", szWeight: "Масса", szVol: "Объём",
     specs: "Характеристики", usedIn: "Объекты, где применялась эта продукция",
     supplied: "Поставленная продукция", client: "Заказчик", loc: "Расположение", year: "Год",
     order: "Запросить цену", orderH: "Запросите цену и срок",
@@ -117,6 +121,8 @@ export const UI = {
   },
   en: {
     back: "Back to catalog", backPr: "Back to projects",
+    sizes: "Sizes", sizesNote: "The sizes below are held in stock or produced to order.",
+    sizesCount: "{n} sizes", szMark: "Mark", szDim: "Dimensions", szWeight: "Weight", szVol: "Volume",
     specs: "Specifications", usedIn: "Projects where this product was used",
     supplied: "Products supplied", client: "Client", loc: "Location", year: "Year",
     order: "Request a price", orderH: "Request a price and lead time",
@@ -202,6 +208,16 @@ h1{font-size:clamp(30px,4.6vw,50px)}
 .specs li::before{content:"";width:6px;height:6px;flex:none;margin-top:6px;background:var(--signal)}
 .btn{display:inline-flex;align-items:center;gap:10px;padding:15px 26px;margin-top:28px;background:var(--signal);color:var(--ink);font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.13em;text-transform:uppercase;font-weight:600}
 .btn:hover{background:var(--ink);color:var(--signal)}
+.szhint{margin-top:22px}
+.szhint a{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;border-bottom:2px solid var(--signal);padding-bottom:3px}
+.szhint a:hover{color:var(--signal-dim)}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);background:var(--white)}
+.sztbl{width:100%;border-collapse:collapse;font-family:"IBM Plex Mono",monospace;font-size:13px}
+.sztbl th{background:var(--ink);color:var(--concrete);text-align:left;padding:13px 16px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;white-space:nowrap}
+.sztbl td{padding:12px 16px;border-top:1px solid var(--line);color:var(--slate);white-space:nowrap}
+.sztbl tbody tr:nth-child(even){background:rgba(27,25,23,.028)}
+.sztbl tbody tr:hover{background:rgba(242,193,14,.13)}
+.sztbl td:first-child{font-weight:600;color:var(--ink)}
 .sec{padding:clamp(40px,6vw,64px) 0;border-top:1px solid var(--line)}
 .sec h2{font-size:clamp(24px,3.4vw,34px);margin-bottom:24px}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}

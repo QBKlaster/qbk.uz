@@ -22,8 +22,25 @@ function altsFor(kind, slug) {
 }
 
 /* ---------- mahsulot sahifasi ---------- */
+/* tipo'lchamlar jadvali — faqat yoqilgan qatorlar */
+function sizesTable(item, t) {
+  const rows = (item.sizes || []).filter((z) => z && z.on !== false && (z.c || z.d || z.w || z.v));
+  if (!rows.length) return { html: "", rows: [] };
+  const cols = [
+    ["c", t.szMark], ["d", t.szDim], ["w", t.szWeight], ["v", t.szVol]
+  ].filter(([k]) => rows.some((z) => z[k]));
+  const html = `<div class="wrap sec" id="sizes"><h2>${t.sizes}</h2>
+    <p class="lead" style="margin:0 0 20px">${t.sizesNote}</p>
+    <div class="tblwrap"><table class="sztbl">
+      <thead><tr>${cols.map(([, n]) => `<th>${n}</th>`).join("")}</tr></thead>
+      <tbody>${rows.map((z) => `<tr>${cols.map(([k]) => `<td>${esc(z[k] || "—")}</td>`).join("")}</tr>`).join("")}</tbody>
+    </table></div></div>`;
+  return { html, rows, cols };
+}
+
 function productPage(data, item, lang) {
   const t = UI[lang], d = pick(item, lang);
+  const sz = sizesTable(item, t);
   const img = item.img ? (item.img.startsWith("http") ? item.img : `${SITE}/${item.img}`) : "";
   const used = (data.projects || []).filter((p) => (p.products || []).includes(item.id));
   const others = (data.products || []).filter((p) => p.id !== item.id).slice(0, 4);
@@ -41,9 +58,12 @@ function productPage(data, item, lang) {
     ${d.d ? `<p class="lead">${esc(d.d)}</p>` : ""}
     ${specs.length ? `<h2 class="mono" style="margin-top:26px;color:var(--signal-dim)">${t.specs}</h2>
       <ul class="specs">${specs.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+    ${sz.rows.length ? `<p class="szhint"><a href="#sizes">${t.sizesCount.replace("{n}", sz.rows.length)} \u2193</a></p>` : ""}
     <a class="btn" href="#order">${t.order}</a>
   </div>
 </div>
+
+${sz.html}
 
 ${used.length ? `<div class="wrap sec"><h2>${t.usedIn}</h2><div class="cards">${used.map((p) => {
     const pd = pick(p, lang);
@@ -79,13 +99,23 @@ ${others.length ? `<div class="wrap sec"><h2>${t.other}</h2><div class="cards">$
     manufacturer: { "@type": "Organization", name: "Qarshi Beton Klaster", url: SITE + "/" },
     ...(specs.length ? {
       additionalProperty: specs.map((x) => ({ "@type": "PropertyValue", name: x.split(":")[0].trim(), value: (x.split(":")[1] || x).trim() }))
+    } : {}),
+    ...(sz.rows.length ? {
+      hasVariant: sz.rows.slice(0, 40).map((z) => ({
+        "@type": "Product",
+        name: [d.n, z.c].filter(Boolean).join(" ").trim(),
+        ...(z.c ? { sku: z.c } : {}),
+        ...(z.d ? { size: z.d } : {}),
+        ...(z.w ? { weight: z.w } : {})
+      }))
     } : {})
   };
 
   return shell({
     lang,
     title: `${d.n} — Qarshi Beton Klaster`,
-    desc: (d.d || d.n) + (specs.length ? " " + specs.slice(0, 3).join("; ") : ""),
+    desc: (d.d || d.n) + (sz.rows.length ? ` ${t.sizesCount.replace("{n}", sz.rows.length)}.` : "")
+          + (specs.length ? " " + specs.slice(0, 3).join("; ") : ""),
     canonical: `${SITE}${prefix(lang)}/mahsulot/${item.slug}`,
     alternates: altsFor("product", item.slug),
     image: img, body, jsonld, contacts: data.contacts

@@ -20,6 +20,7 @@ const MAX_PROJECTS = 200;          // obyektlar soni
 const MAX_PROJECT_IMAGES = 8;      // bitta obyektdagi rasmlar
 const MAX_TEXT = 2000;
 const MAX_SPECS = 20;
+const MAX_SIZES = 60;              // bitta mahsulotdagi tipo'lchamlar
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;   // bitta rasm uchun 2 MB
 const MAX_NEW_IMAGES = 30;                 // bitta saqlashda
 const MAX_TOTAL_BYTES = 3.8 * 1024 * 1024; // Vercel so'rov tanasi ~4.5 MB
@@ -93,7 +94,15 @@ function sanitize(input, cfg, files, errors) {
       id,
       code: str(p.code, 40),
       cat: CATS.has(p.cat) ? p.cat : "rc",
-      img: takeImage(p.img, files, cfg, errors)
+      img: takeImage(p.img, files, cfg, errors),
+      // tipo'lchamlar — qiymatlari tilga bog'liq emas (raqam va markalar)
+      sizes: (Array.isArray(p.sizes) ? p.sizes : []).slice(0, MAX_SIZES).map((z) => ({
+        c: str(z && z.c, 80),          // marka / tipo'lcham
+        d: str(z && z.d, 120),         // o'lchami
+        w: str(z && z.w, 60),          // og'irligi
+        v: str(z && z.v, 80),          // beton hajmi yoki qo'shimcha
+        on: z && z.on === false ? false : true   // saytda ko'rinadimi
+      })).filter((z) => z.c || z.d || z.w || z.v)
     };
     for (const l of ["uz", "ru", "en"]) {
       const t = p[l] && typeof p[l] === "object" ? p[l] : {};
